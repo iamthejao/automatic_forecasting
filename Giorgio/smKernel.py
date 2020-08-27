@@ -106,12 +106,12 @@ def train_test_gp(X, Y, Xtest, Ytest, restarts, currentTs, Q, scoreType, priors,
 
     # Compute the LL and CRPS on the test set
     # Check if it is the same number of the standardized and unstandardized values
-    ll = np.zeros(len(Xtest))
-    crps = np.zeros(len(Xtest))
+    ll = stat.norm.logpdf(x=Ytest, loc=m, scale=s)#np.zeros(len(Xtest))
+    crps = ps.crps_gaussian(Ytest, mu=m, sig=s)#np.zeros(len(Xtest))
 
-    for ii in range(len(Xtest)):
-        ll[ii] = stat.norm.logpdf(x=Ytest[ii], loc=m[ii], scale=s[ii])
-        crps[ii] = ps.crps_gaussian(Ytest[ii], mu=m[ii], sig=s[ii])
+#     for ii in range(len(Xtest)):
+#         ll[ii] = stat.norm.logpdf(x=Ytest[ii], loc=m[ii], scale=s[ii])
+#         crps[ii] = ps.crps_gaussian(Ytest[ii], mu=m[ii], sig=s[ii])
 
     ll = np.mean(ll)
     crps = np.mean(crps)
