@@ -123,20 +123,20 @@ if __name__ == '__main__':
         prophetFcast = prophetFcast.reshape([len(Ytest), 1])
 
         # Metrics for competitors
-        crps_ets = np.zeros(len(Ytest))
-        ll_ets = np.zeros(len(Ytest))
-        ll_arima = np.zeros(len(Ytest))
-        crps_arima = np.zeros(len(Ytest))
-        ll_prophet = np.zeros(len(Ytest))
-        crps_prophet = np.zeros(len(Ytest))
-
-        for jj in range(len(Ytest)):
-            crps_ets[jj] = ps.crps_gaussian(Ytest[jj], mu=etsFcast[jj], sig=etsSigma[jj])
-            crps_arima[jj] = ps.crps_gaussian(Ytest[jj], mu=arimaFcast[jj], sig=arimaSigma[jj])
-            crps_prophet[jj] = ps.crps_gaussian(Ytest[jj], mu=prophetFcast[jj], sig=prophetSigma[jj])
-            ll_ets[jj] = stat.norm.logpdf(x=Ytest[jj], loc=etsFcast[jj], scale=etsSigma[jj])
-            ll_arima[jj] = stat.norm.logpdf(x=Ytest[jj], loc=arimaFcast[jj], scale=arimaSigma[jj])
-            ll_prophet[jj] = stat.norm.logpdf(x=Ytest[jj], loc=prophetFcast[jj], scale=prophetSigma[jj])
+        crps_ets = ps.crps_gaussian(Ytest, mu=etsFcast, sig=etsSigma)#np.zeros(len(Ytest))
+        ll_ets = stat.norm.logpdf(x=Ytest, loc=etsFcast, scale=etsSigma)#np.zeros(len(Ytest))
+        ll_arima = stat.norm.logpdf(x=Ytest, loc=arimaFcast, scale=arimaSigma)#np.zeros(len(Ytest))
+        crps_arima = ps.crps_gaussian(Ytest, mu=arimaFcast, sig=arimaSigma)#np.zeros(len(Ytest))
+        ll_prophet = stat.norm.logpdf(x=Ytest, loc=prophetFcast, scale=prophetSigma)#np.zeros(len(Ytest))
+        crps_prophet = ps.crps_gaussian(Ytest, mu=prophetFcast, sig=prophetSigma)#np.zeros(len(Ytest))
+        
+#         for jj in range(len(Ytest)):
+#             crps_ets[jj] = ps.crps_gaussian(Ytest[jj], mu=etsFcast[jj], sig=etsSigma[jj])
+#             crps_arima[jj] = ps.crps_gaussian(Ytest[jj], mu=arimaFcast[jj], sig=arimaSigma[jj])
+#             crps_prophet[jj] = ps.crps_gaussian(Ytest[jj], mu=prophetFcast[jj], sig=prophetSigma[jj])
+#             ll_ets[jj] = stat.norm.logpdf(x=Ytest[jj], loc=etsFcast[jj], scale=etsSigma[jj])
+#             ll_arima[jj] = stat.norm.logpdf(x=Ytest[jj], loc=arimaFcast[jj], scale=arimaSigma[jj])
+#             ll_prophet[jj] = stat.norm.logpdf(x=Ytest[jj], loc=prophetFcast[jj], scale=prophetSigma[jj])
 
         results['etsMae'][idx] = np.mean(np.abs(Ytest - etsFcast))
         results['arimaMae'][idx] = np.mean(np.abs(Ytest - arimaFcast))
