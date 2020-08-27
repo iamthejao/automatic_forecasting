@@ -81,7 +81,7 @@ if __name__ == '__main__':
     fcast = {}
     fcast_sigma = {}
 
-    for idx in list(range(howManyTs))[:3]:
+    for idx in list(range(howManyTs)):
 
         print(str(idx) + "/" + str(howManyTs))
         print(trainList[idx][0])
