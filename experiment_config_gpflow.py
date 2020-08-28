@@ -2,10 +2,10 @@ from tensorflow_probability import distributions as tfd
 import numpy as np
 import kernel_setup
 
-FORCE_RERUN_IF_EXISTS = False
+FORCE_RERUN_IF_EXISTS = True
 NORMALIZED_METRICS = False
 
-DATA_FOLDERS = ["electricity"]
+DATA_FOLDERS = ["calls"]
 
 FILTER = {'monthly':[],
           'quarterly':[],
@@ -22,21 +22,23 @@ DATA_FOLDER_PERIOD = {"monthly": 12, "quarterly": 4, "daily": 365.25,
 # one observation every month (12 obs = 1y) or one observation every 3 months (4 obs = 1y)
 
 DATA_ROOT = "data_full/multiple_seasonality"
-RESULT_ROOT = "results" #"from_cluster/all ts/results_whole_data"
+RESULT_ROOT = "from_cluster/all ts/results_sparse"
 
 # This is the experiment setup dictionary, if you delete here it wont run
 # even if the key exists in the others
 
 # Electricity ds has 3 periodic components
-periods = [7., 354.37, 365.25]
-# For calls use
-# periods = [169, 169*5]
+periods = [169.0, 169*5.0]#[7., 354.37, 365.25]#
 max_p = max(periods)
 year_periods = [p/max_p for p in periods]
+print(year_periods)
+#year_periods = [1.0]
 EXPERIMENTS = \
     {
-        "SGPR 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
-        "SVGP 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        #"SGPR 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        #"SVGP 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        "SVGP 200 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        #"GPR SP WAIC": kernel_setup.sm_linear_rbf_np(year_periods)
     }
 
 
@@ -65,6 +67,8 @@ PRIOR_DEFAULT = None
 PRIORS_EXPERIMENT = {
     "SGPR 100 WAIC": priors_alessio,
     "SVGP 100 WAIC": priors_alessio,
+    "SVGP 200 WAIC": priors_alessio,
+    "GPR SP WAIC": priors_alessio
 }
 
 LIKELIHOOD_DEFAULT = 'Gaussian'
@@ -72,12 +76,16 @@ LIKELIHOOD_EXPERIMENT = {}
 
 MODEL_DEFAULT  = None
 MODEL_EXPERIMENT = {"SGPR 100 WAIC": "SGPR",
-                    "SVGP 100 WAIC": "SVGP"}
+                    "SVGP 100 WAIC": "SVGP",
+                    "SVGP 200 WAIC": "SVGP",
+                    "GPR SP WAIC": "GPR"}
 
 # (Number of points, fixed or train) -> train is False, fixed is True
 INDUCING_DEFAULT  =  None
 INDUCING_EXPERIMENT = { "SGPR 100 WAIC": (100, False),
                         "SVGP 100 WAIC": (100, False),
+                        "SVGP 200 WAIC": (200, False),
+                        "GPR SP WAIC": (100, False)
                         }
 
 SCORE_DEFAULT = 'waic'
@@ -88,7 +96,7 @@ N_RESTARTS_DEF = 5
 N_RESTARTS = {}
 SAVE_PLOTS = True
 # Save model 5 restarts
-CHECKPOINTS = [5]
+CHECKPOINTS = [1, 5]#, 10]
 
 
 

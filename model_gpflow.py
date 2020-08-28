@@ -9,6 +9,7 @@ from sklearn.cluster import KMeans
 import time
 from gpflow.ci_utils import ci_niter, ci_range
 from gpflow.utilities import print_summary
+from gpflow.kernels import AnisotropicStationary
 import tensorflow_probability as tfp
 gpflow.config.set_default_float(np.float32)
 gpflow.config.set_default_jitter(1E-2)
@@ -23,7 +24,7 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 BATCH_SIZE = 256
 
 MAX_ITERS= 5000
-MIN_ITERS = 500
+MIN_ITERS = 1000 # 500
 CHECK_EVERY = 100
 PRINT_EVERY = 100
 REQ_IMPROV = 30 
@@ -56,6 +57,23 @@ def rename_parameter(name, old_parameter: gpflow.Parameter):
     old_parameter.transform
     return new_parameter
 
+class CosineLikeGPy(AnisotropicStationary):
+    """
+    The Cosine kernel. Functions drawn from a GP with this kernel are sinusoids
+    (with a random phase).  The kernel equation is
+
+        k(r) = σ² cos{2πd}
+
+    where:
+    d  is the sum of the per-dimension differences between the input points, scaled by the
+    lengthscale parameter ℓ (i.e. Σᵢ [(X - X2ᵀ) / ℓ]ᵢ),
+    σ² is the variance parameter.
+    """
+
+    def K_d(self, d):
+        d = tf.reduce_sum(d, axis=-1)
+        return self.variance * tf.cos(d) #2 * np.pi *
+
 
 class ExtraKernels:
 
@@ -68,7 +86,7 @@ class ExtraKernels:
         """
         for i in range(Q):
             name = 'mixture_{0}.'.format(i)
-            cos = gpflow.kernels.Cosine(variance=1)
+            cos = CosineLikeGPy(variance=1)
             set_trainable(cos.variance, False)
             cos.variance = rename_parameter(name + 'cos.variance', cos.variance)
             cos.lengthscales = rename_parameter(name + 'cos.lengthscale', cos.lengthscales)
@@ -312,7 +330,7 @@ def train(reg, loss_f):
             optimize(loss_f, opt_var_tuple)
 
 def compile_loss(reg, input):
-    if input.model == 'SGPR':
+    if 'GPR' in input.model:
         return reg.training_loss_closure()
     else:
         data = (input.data['xtrain'], input.data['ytrain'])
@@ -360,4 +378,4 @@ def bayes_opt_training(input, kernel, restarts=20, seed=0, n_jobs=1,
     study.optimize(objective, n_trials=restarts, n_jobs=n_jobs,
                    timeout=timeout)
 
-    return study.best_params, study.best_value
+    return study
