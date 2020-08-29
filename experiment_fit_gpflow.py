@@ -18,7 +18,7 @@ count_experiments = 0.0
 for folder in config.DATA_FOLDERS:
 
     location = Path(config.DATA_ROOT).joinpath(folder)
-    trainFiles = list(filter(lambda name: 'train' in name, os.listdir(location))) #[f'train{i}.csv' for i in range(14, 1, -1)]#
+    trainFiles = [f'train{i}.csv' for i in range(0, 15, 1)]#list(filter(lambda name: 'train' in name, os.listdir(location))) ##
 
     for file in trainFiles:
 

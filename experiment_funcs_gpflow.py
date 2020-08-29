@@ -10,6 +10,7 @@ from decorators import lazy
 import model_gpflow as model
 from gpflow.models import GPR
 from filelock import FileLock
+from gpflow.utilities import deepcopy
 
 import bz2
 import _pickle as cPickle
@@ -124,7 +125,7 @@ def train_model(input: ExperimentInput):
         input.data = input.data()
 
     # Kernel
-    kernel = input.kernel
+    kernel = deepcopy(input.kernel)
 
     # Adding priors to kernel
     kernel_w_prior = model.set_kernel_priors(input.priors, kernel)
@@ -133,11 +134,13 @@ def train_model(input: ExperimentInput):
     model.CACHE_MODELS = {}
 
     # I dont care about output, I will get the cached models
-    _, best_score = model.bayes_opt_training(input,
+    study = model.bayes_opt_training(input,
                                              kernel_w_prior,
                                              n_jobs=1,
                                              restarts=input.restarts,
                                              seed=config.SEED)
+
+    times = [trial.duration.total_seconds() for trial in study.trials]
 
     keys = [key for key in model.CACHE_MODELS.keys() if key[1] == input.name]
 
@@ -166,19 +169,24 @@ def train_model(input: ExperimentInput):
 
     model.CACHE_MODELS = {}
 
-    return ms
+    return ms, times
 
 
 def get_model_parameters(reg): return {p.name: p for p in reg.parameters}
 
 
-def save_model_results(out_train):
+def save_model_results(out_train, times=None):
 
     (reg, goodness, input, failed) = out_train
 
     # Path for saving
     result_path = Path(config.RESULT_ROOT).joinpath(input.data['folder']).joinpath(str(input.data['idx']))
     result_path.mkdir(parents=True, exist_ok=True)
+
+    if times is not None:
+        times_path = result_path.joinpath(f"{input.name}.times")
+        if times_path.exists() is False:
+            compressed_pickle(times_path, times)
 
     # Saving data
     data_path = result_path.joinpath("data_dict.dat")
@@ -211,6 +219,15 @@ def save_model_results(out_train):
         error['folder'] = input.data['folder']
         error['idx'] = input.data['idx']
 
+    # Adding other scores
+
+    in_cpy = copy.deepcopy(input)
+    in_cpy.score = 'waic'
+    info[0]['train_waic'] = model.score(reg, in_cpy)
+    in_cpy.score = 'll'
+    if input.model != 'SVGP':
+        info[0]['train_ll'] = model.score(reg, in_cpy).numpy()
+
     df = pd.DataFrame(info)
     save_df = result_path.joinpath("stats{0}.csv".format(input.data['idx']))
 
@@ -228,6 +245,6 @@ def save_model_results(out_train):
 
 def train_and_save(input: ExperimentInput):
 
-    m = train_model(input)
+    m, times = train_model(input)
     for models in m:
-        save_model_results(models)
+        save_model_results(models, times=times)

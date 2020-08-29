@@ -2,7 +2,7 @@ from tensorflow_probability import distributions as tfd
 import numpy as np
 import kernel_setup
 
-FORCE_RERUN_IF_EXISTS = True
+FORCE_RERUN_IF_EXISTS = False
 NORMALIZED_METRICS = False
 
 DATA_FOLDERS = ["calls"]
@@ -22,7 +22,7 @@ DATA_FOLDER_PERIOD = {"monthly": 12, "quarterly": 4, "daily": 365.25,
 # one observation every month (12 obs = 1y) or one observation every 3 months (4 obs = 1y)
 
 DATA_ROOT = "data_full/multiple_seasonality"
-RESULT_ROOT = "from_cluster/all ts/results_sparse"
+RESULT_ROOT = "from_cluster/all ts/results_sparse_new_train"
 
 # This is the experiment setup dictionary, if you delete here it wont run
 # even if the key exists in the others
@@ -35,9 +35,9 @@ print(year_periods)
 #year_periods = [1.0]
 EXPERIMENTS = \
     {
-        #"SGPR 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        "SGPR 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
         #"SVGP 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
-        "SVGP 200 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        #"SVGP 200 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
         #"GPR SP WAIC": kernel_setup.sm_linear_rbf_np(year_periods)
     }
 
