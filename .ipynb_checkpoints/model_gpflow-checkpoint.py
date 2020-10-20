@@ -10,45 +10,41 @@ import time
 from gpflow.ci_utils import ci_niter, ci_range
 from gpflow.utilities import print_summary
 from gpflow.kernels import AnisotropicStationary
-import shutil
 import tensorflow_probability as tfp
-import os
 gpflow.config.set_default_float(np.float32)
 gpflow.config.set_default_jitter(1E-2)
 config = gpflow.config.config()
 
 CACHE_MODELS = {}
-TMP_NAME = 'tmp3/'
-CURRENT_MODEL = None
-TRAIN_LENGTH = None
 
 ADAM_LR = 0.01
-GAMMA_LR = 0.1
+GAMMA_LR = 0.025
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 BATCH_SIZE = 256
 
 MAX_ITERS= 5000
-MIN_ITERS = 1000
-
-CHECKPOINT_EVERY = 50
-CHECK_EVERY = 50
-
+MIN_ITERS = 1000 # 500
+CHECK_EVERY = 100
 PRINT_EVERY = 100
-
-REQ_IMPROV = 50
+REQ_IMPROV = 30 
 REQ_IMPROV_PCT = 0.001 # Improvement of at least 0.001
-
 MAX_REQ_IMPROV = 500 # After 500 without improvement it stops
 UPPER_BOUND_NORM = np.sqrt(10) * 10
 MIN_NORM = np.sqrt(10)
-NORM_TOO_SMALL = np.sqrt(10)*1E-1 # If norm gets lower than this, it stops
-CV_THRES = 0.01
+NORM_TOO_SMALL = 1E-1 # If norm gets lower than this, it stops
+CV_THRES = 0.01#0.30
 SCIPY_OPT = False
 
 # Rule for stopping
 # (LAST_IMPROV > REQ_IMPROV AND NORM < MIN_NORM) OR (LAST_IMPROV > MAX_REQ_IMPROV AND NORM < UPPER_BOUND_NORM) OR (NORM < NORM_TOO_SMALL)
 print('[SCIPY OPT: ]', SCIPY_OPT)
+
+
+
+#DECAY=0.8
+#DECAY_EVERY = 150
+#STAIRCASE = False
 
 def rename_parameter(name, old_parameter: gpflow.Parameter):
     new_parameter = gpflow.Parameter(
@@ -252,25 +248,19 @@ def optimize_scipy(loss_f, variables):
     OPT = gpflow.optimizers.Scipy()
     OPT.minimize(loss_f, variables, options=dict(maxiter=ci_niter(10000)))
 
-def optimize(manager, loss_f, optimizer_var_tuples, iters=MAX_ITERS):
-
-  print(CURRENT_MODEL)
+def optimize(loss_f, optimizer_var_tuples, iters=MAX_ITERS):
 
   start = time.time()
 
   tf_opt = tf.function(optimization_step)
   tf_opt_natgrad = tf.function(optimization_step_natgrad)
 
-  best_measure = 1E9
-  best_measure_it = 0
   best_loss = 1E9
-  last_saved = 0
-  its_per_set = TRAIN_LENGTH // BATCH_SIZE if CURRENT_MODEL == 'SVGP' else 1
-  print("[ITERATIONS PER WHOLE DS]: ", its_per_set)
   last_losses = []
   last_improvement = 0
-
   for i in range(ci_niter(iters)):
+
+    i = i + 1
     
     for opt, var in optimizer_var_tuples:
 
@@ -279,75 +269,56 @@ def optimize(manager, loss_f, optimizer_var_tuples, iters=MAX_ITERS):
         else:
             loss, grads = tf_opt(loss_f, var, opt)
 
+            last_losses.append(loss)
+            last_losses = last_losses[-100:]
+
+            if loss < best_loss:
+                delta = (loss - best_loss)
+                ratio = abs(delta/best_loss)
+                best_loss = loss
+                if ratio < REQ_IMPROV_PCT:
+                    last_improvement = 0
+            else:
+                last_improvement += 1
+
             if (i % CHECK_EVERY == 0) or (i % PRINT_EVERY == 0):
                 # Filtering out grad of the inducing variable
                 only_vars = [g for g in grads if len(g.shape) == 0]
                 grad_tensor = tf.convert_to_tensor(only_vars)
                 norm = tf.linalg.norm(grad_tensor)
 
-    # Only get the last 100 iterations
-    last_losses.append(loss)
-    last_losses = last_losses[-3*its_per_set:]
-    mean_loss = tf.math.reduce_mean(last_losses)
-    measure = mean_loss if CURRENT_MODEL == 'SVGP' else loss
+        if i % PRINT_EVERY == 0:
+            cv = tf.math.sqrt(tf.math.reduce_variance(last_losses))/tf.math.abs(tf.math.reduce_mean(last_losses))
+            name = repr(opt).split(".")[-1].split(" ")[0]
+            tf.print(f"{name} at iteration {i}: batch loss {loss}")
+            tf.print(f"Last improvement {last_improvement} iterations ago")
+            tf.print(f"Coef of Variation {cv:.3f}.")
+            if type(opt) != gpflow.optimizers.natgrad.NaturalGradient:
+                tf.print(f"{name} at iteration {i}: norm {norm}")
+            tf.print("")
 
-    # Check if improved after whole data passed
-    if (measure < best_measure) and ((i - best_measure_it) >= its_per_set):
-        last_improvement = 0
-        best_measure = measure
-        best_measure_it = i
-        best_loss = loss
-        if i > MIN_ITERS:
-            if (i - last_saved) >= CHECKPOINT_EVERY:
-                manager.save()
-                last_saved = i
-    else:
-        last_improvement += 1
-
-
-    if i % PRINT_EVERY == 0:
-        name = repr(opt).split(".")[-1].split(" ")[0]
-        tf.print(f"{name} at iteration {i}: batch loss {loss}")
-        tf.print(f"Best Loss: batch loss {best_loss}")
-        tf.print(f"Last improvement {last_improvement} iterations ago")
-        tf.print(f"Mean Loss {mean_loss:.5f}.")
-        tf.print(f"Best measure so far {best_measure:.5f}.")
-        tf.print(f"At iteration {best_measure_it:.5f}.")
-        if type(opt) != gpflow.optimizers.natgrad.NaturalGradient:
-            tf.print(f"{name} at iteration {i}: norm {norm}")
-        tf.print("")
 
     if i % CHECK_EVERY == 0:
         if i > MIN_ITERS:
-            if ((last_improvement >= REQ_IMPROV) and (norm < MIN_NORM)) or (norm < NORM_TOO_SMALL) or ((last_improvement >= MAX_REQ_IMPROV) and (norm < UPPER_BOUND_NORM)):
+            cv = tf.math.sqrt(tf.math.reduce_variance(last_losses)) / tf.math.abs(tf.math.reduce_mean(last_losses))
+            if ((last_improvement >= REQ_IMPROV) and (norm < MIN_NORM) and (cv < CV_THRES)) or (norm < NORM_TOO_SMALL) or ((last_improvement>= MAX_REQ_IMPROV) and (norm < UPPER_BOUND_NORM)):
                 tf.print(f"Stopped at iteration: {i}")
                 tf.print(f"Last improvement: {last_improvement}")
                 tf.print(f"Adam norm: {norm}")
                 tf.print("Training Elapsed: ", time.time() - start)
-
-                if (measure < best_measure):
-                    manager.save()
                 return
 
   tf.print("Training Elapsed: ", time.time() - start)
-  if (measure < best_measure):
-      manager.save()
-  return
 
-def train(manager, loss_f):
-    global CURRENT_MODEL
-    # Getting model from checkpoint obj
-    reg = manager._checkpoint.model
+def train(reg, loss_f):
     OPTIMIZER = tf.optimizers.Adam(learning_rate=ADAM_LR, amsgrad=True)
     NATGRAD = gpflow.optimizers.NaturalGradient(GAMMA_LR)
     if type(reg) is gpflow.models.SVGP:
-        CURRENT_MODEL = 'SVGP'
         variational_params = [(reg.q_mu, reg.q_sqrt)]
         trainable_vars = reg.trainable_variables
         opt_var_tuple = [(NATGRAD, variational_params[0]), (OPTIMIZER, trainable_vars)]
-        optimize(manager, loss_f, opt_var_tuple)
+        optimize(loss_f, opt_var_tuple)
     else:
-        CURRENT_MODEL = '#GPR'
         trainable_vars = reg.trainable_variables
         if SCIPY_OPT:
             #tf_opt = tf.function(optimize_scipy)
@@ -356,16 +327,13 @@ def train(manager, loss_f):
             print("Trained in: ",time.time()-start)
         else:
             opt_var_tuple = [(OPTIMIZER, trainable_vars)]
-            optimize(manager, loss_f, opt_var_tuple)
+            optimize(loss_f, opt_var_tuple)
 
 def compile_loss(reg, input):
-    global TRAIN_LENGTH
     if 'GPR' in input.model:
-        TRAIN_LENGTH = reg.data[0].shape[0]
         return reg.training_loss_closure()
     else:
         data = (input.data['xtrain'], input.data['ytrain'])
-        TRAIN_LENGTH = data[0].shape[0]
         N = data[0].shape[0]
         data_minibatch = tf.data.Dataset.from_tensor_slices(data).prefetch(AUTOTUNE).repeat().shuffle(N).batch(BATCH_SIZE)
         data_minibatch_it = iter(data_minibatch)
@@ -391,26 +359,11 @@ def bayes_opt_training(input, kernel, restarts=20, seed=0, n_jobs=1,
         hash_key = hash(tuple(np.round([var.numpy() for var in kernel.variables], 3).tolist()))
         key = (hash_key, input.name, trial.number)
 
-        #try:
-
-        if os.path.exists(TMP_NAME):
-            shutil.rmtree(TMP_NAME)
-        os.mkdir(TMP_NAME)
-        ckpt = tf.train.Checkpoint(model=reg)
-        manager = tf.train.CheckpointManager(ckpt, TMP_NAME, max_to_keep=1)
-        train(manager, loss_f)
-
-        # Restoring best loss model
-        status = ckpt.restore(manager.latest_checkpoint)
-
-        del manager
-        del ckpt
-
-        shutil.rmtree(TMP_NAME)
-
-        goodness = score(reg, input)
-        #except:
-        #  goodness = float('nan')
+        try:
+          train(reg, loss_f)
+          goodness = score(reg, input)
+        except:
+          goodness = float('nan')
           
         CACHE_MODELS[key] = {'model': deepcopy(reg), 'value': goodness}
 

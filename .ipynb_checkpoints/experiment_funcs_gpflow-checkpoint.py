@@ -10,7 +10,6 @@ from decorators import lazy
 import model_gpflow as model
 from gpflow.models import GPR
 from filelock import FileLock
-from gpflow.utilities import deepcopy
 
 import bz2
 import _pickle as cPickle
@@ -52,51 +51,27 @@ def read_experiment_data(folder, location, file):
     # Size and Normalization variables
     sizeTrain = len(train)
 
-    if folder == 'calls':
-        print("CALLS DATASET, GETTNG DATES")
-        train = pd.read_csv(location.joinpath(file))
-        test = pd.read_csv(location.joinpath('test{0}.csv'.format(idx)))
-        dates_series = train['ds'].append(test['ds'])
-        assert (dates_series.sort_values() == dates_series).all()
-        week = 365.25 / 7.
-        train_size = len(train['ds'])
-        Dt = 1.0 / (week * 7 * 288)
-        dates = pd.to_datetime(dates_series).reset_index(drop=True)
-        dates_diff = dates.diff()
-        sec = dates_diff[1]
-        deltas = dates_diff.fillna(sec)
-        minutes = np.array([d.total_seconds() / 60. for d in deltas])
+    y = np.vstack((train, test)).ravel()
+    data = np.array(list(enumerate(y)), dtype=np.float32)
 
-        Xtotal = (np.cumsum(minutes / 5.0) * Dt)[None].T
+    # Starting from 1
+    data[:, 0] += 1
 
-        xtrain = np.float32(Xtotal[:train_size, :])
-        xtest = np.float32(Xtotal[train_size:, :])
-        ytrain = np.float32(train[['x']].values)
-        ytest = np.float32(test[['x']].values)
+    # Transforming x axis to years (instead of months or quarters)
+    # so the fixed period in the experiment makes sense
+    # we know that the data is 1y periodic
+    period = config.DATA_FOLDER_PERIOD[folder]
+    data[:, 0] /= period
 
-        period = config.DATA_FOLDER_PERIOD[folder]
-    else:
-        y = np.vstack((train, test)).ravel()
-        data = np.array(list(enumerate(y)), dtype=np.float32)
+    # Separating the data
+    xtrain, xtest = data[:sizeTrain, 0], data[sizeTrain:, 0]
+    ytrain, ytest = data[:sizeTrain, 1], data[sizeTrain:, 1]
 
-        # Starting from 1
-        data[:, 0] += 1
-
-        # Transforming x axis to years (instead of months or quarters)
-        # so the fixed period in the experiment makes sense
-        # we know that the data is 1y periodic
-        period = config.DATA_FOLDER_PERIOD[folder]
-        data[:, 0] /= period
-
-        # Separating the data
-        xtrain, xtest = data[:sizeTrain, 0], data[sizeTrain:, 0]
-        ytrain, ytest = data[:sizeTrain, 1], data[sizeTrain:, 1]
-
-        # Adding a dimension (column vector)
-        xtrain = xtrain[None].T
-        xtest = xtest[None].T
-        ytrain = ytrain[None].T
-        ytest = ytest[None].T
+    # Adding a dimension (column vector)
+    xtrain = xtrain[None].T
+    xtest = xtest[None].T
+    ytrain = ytrain[None].T
+    ytest = ytest[None].T
 
     # Normalizing data
     scaler = StandardScaler()
@@ -149,7 +124,7 @@ def train_model(input: ExperimentInput):
         input.data = input.data()
 
     # Kernel
-    kernel = deepcopy(input.kernel)
+    kernel = input.kernel
 
     # Adding priors to kernel
     kernel_w_prior = model.set_kernel_priors(input.priors, kernel)
@@ -163,8 +138,6 @@ def train_model(input: ExperimentInput):
                                              n_jobs=1,
                                              restarts=input.restarts,
                                              seed=config.SEED)
-
-    times = [trial.duration.total_seconds() for trial in study.trials]
 
     keys = [key for key in model.CACHE_MODELS.keys() if key[1] == input.name]
 
@@ -193,24 +166,19 @@ def train_model(input: ExperimentInput):
 
     model.CACHE_MODELS = {}
 
-    return ms, times
+    return ms
 
 
 def get_model_parameters(reg): return {p.name: p for p in reg.parameters}
 
 
-def save_model_results(out_train, times=None):
+def save_model_results(out_train):
 
     (reg, goodness, input, failed) = out_train
 
     # Path for saving
     result_path = Path(config.RESULT_ROOT).joinpath(input.data['folder']).joinpath(str(input.data['idx']))
     result_path.mkdir(parents=True, exist_ok=True)
-
-    if times is not None:
-        times_path = result_path.joinpath(f"{input.name}.times")
-        if times_path.exists() is False:
-            compressed_pickle(times_path, times)
 
     # Saving data
     data_path = result_path.joinpath("data_dict.dat")
@@ -243,15 +211,6 @@ def save_model_results(out_train, times=None):
         error['folder'] = input.data['folder']
         error['idx'] = input.data['idx']
 
-    # Adding other scores
-
-    in_cpy = copy.deepcopy(input)
-    in_cpy.score = 'waic'
-    info[0]['train_waic'] = model.score(reg, in_cpy)
-    in_cpy.score = 'll'
-    if input.model != 'SVGP':
-        info[0]['train_ll'] = model.score(reg, in_cpy).numpy()
-
     df = pd.DataFrame(info)
     save_df = result_path.joinpath("stats{0}.csv".format(input.data['idx']))
 
@@ -269,6 +228,6 @@ def save_model_results(out_train, times=None):
 
 def train_and_save(input: ExperimentInput):
 
-    m, times = train_model(input)
+    m = train_model(input)
     for models in m:
-        save_model_results(models, times=times)
+        save_model_results(models)

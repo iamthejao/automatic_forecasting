@@ -2,7 +2,7 @@ from tensorflow_probability import distributions as tfd
 import numpy as np
 import kernel_setup
 
-FORCE_RERUN_IF_EXISTS = False
+FORCE_RERUN_IF_EXISTS = True
 NORMALIZED_METRICS = False
 
 DATA_FOLDERS = ["calls"]
@@ -16,29 +16,29 @@ FILTER = {'monthly':[],
 # This takes the x axis and divide by this value
 # The x-axis is generated as x = np.linspace(1, len(train)+1, 1) / DATA_FOLDER_PERIOD[period]
 DATA_FOLDER_PERIOD = {"monthly": 12, "quarterly": 4, "daily": 365.25,
-                      "weekly": 365.25/7, "calls": 365.25, "electricity": 365.25,
+                      "weekly": 365.25/7, "calls": 169*5, "electricity": 365.25,
                       "gas": 365.25/7.0}
 
 # one observation every month (12 obs = 1y) or one observation every 3 months (4 obs = 1y)
 
 DATA_ROOT = "data_full/multiple_seasonality"
-RESULT_ROOT = "results"
+RESULT_ROOT = "from_cluster/all ts/results_sparse"
 
 # This is the experiment setup dictionary, if you delete here it wont run
 # even if the key exists in the others
 
 # Electricity ds has 3 periodic components
-#periods = [7., 354.37, 365.25]#[169.0, 169*5.0]#
-#max_p = max(periods)
-#year_periods = [p/max_p for p in periods]
-week = 365.25/7
-year_periods = [1.0/(7*week), 1.0/week]
+periods = [169.0, 169*5.0]#[7., 354.37, 365.25]#
+max_p = max(periods)
+year_periods = [p/max_p for p in periods]
 print(year_periods)
+#year_periods = [1.0]
 EXPERIMENTS = \
     {
-        #"SVGP 200 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
-        "SVGP 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
         #"SGPR 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        "SVGP 100 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        #"SVGP 200 WAIC": kernel_setup.sm_linear_rbf_np(year_periods),
+        #"GPR SP WAIC": kernel_setup.sm_linear_rbf_np(year_periods)
     }
 
 
@@ -82,10 +82,10 @@ MODEL_EXPERIMENT = {"SGPR 100 WAIC": "SGPR",
 
 # (Number of points, fixed or train) -> train is False, fixed is True
 INDUCING_DEFAULT  =  None
-INDUCING_EXPERIMENT = { "SGPR 100 WAIC": (100, True),
-                        "SVGP 100 WAIC": (100, True),
-                        "SVGP 200 WAIC": (200, True),
-                        "GPR SP WAIC": (100, True)
+INDUCING_EXPERIMENT = { "SGPR 100 WAIC": (100, False),
+                        "SVGP 100 WAIC": (100, False),
+                        "SVGP 200 WAIC": (200, False),
+                        "GPR SP WAIC": (100, False)
                         }
 
 SCORE_DEFAULT = 'waic'
@@ -95,9 +95,8 @@ SEED = 0 #0x0D15EA5E
 N_RESTARTS_DEF = 1
 N_RESTARTS = {}
 SAVE_PLOTS = True
-
-# Save model 1 restart
-CHECKPOINTS = [1]#, 10]
+# Save model 5 restarts
+CHECKPOINTS = [1]#, 5]#, 10]
 
 
 
