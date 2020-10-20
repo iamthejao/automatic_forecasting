@@ -1,82 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2c09f886-cc48-4c08-9b74-ded66f332f7e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/Giorgio/smKernel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Giorgio/timeSeries.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/.ipynb_checkpoints/train14-checkpoint.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/.ipynb_checkpoints/train16-checkpoint.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test0.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test1.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test10.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test11.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test12.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test13.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test14.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test15.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test16.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test17.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test18.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test19.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test2.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test20.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test21.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test22.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test23.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test24.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test3.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test4.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test5.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test6.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test7.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test8.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/test9.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train0.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train1.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train10.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train11.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train12.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train13.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train14.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train15.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train16.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train17.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train18.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train19.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train2.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train20.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train21.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train22.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train23.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train24.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train3.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train4.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train5.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train6.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train7.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train8.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/elecdemand/train9.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/.ipynb_checkpoints/train15-checkpoint.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/fcast15.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/fcast16.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/fcast17.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/test15.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/test16.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/test17.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/train15.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/train16.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_full/multiple_seasonality/electricity/train17.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_config_gpflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_config_gpflow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_fit_gpflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_fit_gpflow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_funcs_gpflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_funcs_gpflow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/model_gpflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_gpflow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/electricity/15/SGPR 100 WAIC 5.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/electricity/15/SGPR 100 WAIC 5.predictions.pbz2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/electricity/15/data_dict.dat.pbz2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/electricity/15/stats15.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/electricity/15/stats15.csv.lock" beforeDir="false" />
-    </list>
+    <list default="true" id="2c09f886-cc48-4c08-9b74-ded66f332f7e" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +72,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1680" />
     <option name="height" value="1027" />
@@ -177,6 +102,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -233,7 +159,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1680" height="1027" extended-state="1" />
+    <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
